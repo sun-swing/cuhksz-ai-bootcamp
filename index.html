@@ -41,6 +41,7 @@
       <a href="#/week/1" data-route="/week">每周详情</a>
       <a href="#/docs" data-route="/docs">教学文件</a>
       <a href="#/checkin" data-route="/checkin">打卡进度</a>
+      <a href="#/works" data-route="/works">作品墙</a>
       <a href="#/faq" data-route="/faq">常见问题</a>
     </nav>
 
@@ -243,6 +244,39 @@
           <div class="card card--tip" id="ruleCard"></div>
         </aside>
       </div>
+
+      <div class="cloudwall">
+        <div class="card cloudwall__form">
+          <h4>☁️ 云端打卡</h4>
+          <p class="card__sub">把打卡提交到云端，会出现在打卡墙上，全营同学都能看到你的进度。</p>
+          <div class="field">
+            <label for="cwNick">昵称</label>
+            <input id="cwNick" maxlength="20" placeholder="如：张三 · 2024级" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="cwWeek">周次</label>
+            <select id="cwWeek">
+              <option value="1">第 1 周 · 安装 WorkBuddy</option>
+              <option value="2">第 2 周 · 搭建知识库</option>
+              <option value="3">第 3 周 · 做第一个 Skill</option>
+              <option value="4">第 4 周 · 个人网页上线</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cwContent">打卡内容</label>
+            <textarea id="cwContent" maxlength="300" rows="3" placeholder="✅ 我完成了… 💡 最有收获的一点…"></textarea>
+          </div>
+          <button class="btn btn--full" type="button" id="cwSubmit">提交打卡</button>
+          <p class="cloudwall__msg" id="cwMsg" aria-live="polite"></p>
+        </div>
+        <div class="card cloudwall__list">
+          <h4>🔥 打卡墙</h4>
+          <p class="card__sub">全营最新的云端打卡 · 实时更新</p>
+          <div class="cloudwall__items" id="cwList">
+            <p class="cloudwall__loading">正在加载打卡墙…</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ==================== 互动玩法 ==================== -->
@@ -256,6 +290,56 @@
       <p class="hintline">
         以上话题来自腾讯云官方《社群运营内容库》，完整版共 200 条，覆盖 AI 行业热点 / 校园学习 / 校园生活 / 学习提效 / 产品体验 / AI 共创 / 游戏互动 / 软广种草 / 留存共创 九个大类。
       </p>
+    </section>
+
+    <!-- ==================== 作品墙 ==================== -->
+    <section class="view" id="view-works" data-view="/works">
+      <div class="pagehead">
+        <span class="sec-head__kicker">作品墙</span>
+        <h1>每周一个成果，晒出来</h1>
+        <p>把你的知识库、Skill、个人网页提交到云端作品墙，全营同学都能看到。四周之后，这里就是你的作品集。</p>
+      </div>
+
+      <div class="cloudwall cloudwall--works">
+        <div class="card cloudwall__form">
+          <h4>🚀 提交作品</h4>
+          <p class="card__sub">链接可以是网页、截图地址或文档分享链接，没有链接可以先写「暂无」。</p>
+          <div class="field">
+            <label for="wkNick">昵称</label>
+            <input id="wkNick" maxlength="20" placeholder="如：张三 · 2024级" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="wkWeek">周次</label>
+            <select id="wkWeek">
+              <option value="1">第 1 周 · 安装 WorkBuddy</option>
+              <option value="2">第 2 周 · 搭建知识库</option>
+              <option value="3">第 3 周 · 做第一个 Skill</option>
+              <option value="4" selected>第 4 周 · 个人网页上线</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="wkTitle">作品名称</label>
+            <input id="wkTitle" maxlength="40" placeholder="如：我的第一个知识库 / 个人主页">
+          </div>
+          <div class="field">
+            <label for="wkUrl">作品链接（选填）</label>
+            <input id="wkUrl" maxlength="300" placeholder="https:// …" inputmode="url">
+          </div>
+          <div class="field">
+            <label for="wkDesc">一句话介绍（选填）</label>
+            <textarea id="wkDesc" maxlength="200" rows="2" placeholder="这个作品解决了什么问题？"></textarea>
+          </div>
+          <button class="btn btn--full" type="button" id="wkSubmit">提交作品</button>
+          <p class="cloudwall__msg" id="wkMsg" aria-live="polite"></p>
+        </div>
+        <div class="card cloudwall__list">
+          <h4>🖼 作品列表</h4>
+          <p class="card__sub">全营最新提交 · 点标题可打开链接</p>
+          <div class="cloudwall__items" id="wkList">
+            <p class="cloudwall__loading">正在加载作品墙…</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ==================== 常见问题 ==================== -->
@@ -323,6 +407,8 @@
 <button class="totop" id="toTop" type="button" aria-label="回到顶部">↑</button>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
 <script src="script.js"></script>
+<script src="cloud.js"></script>
 </body>
 </html>

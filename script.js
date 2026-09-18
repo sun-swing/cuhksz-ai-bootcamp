@@ -1282,7 +1282,7 @@ function tickCountdowns() {
    十一、视图路由（跳转式，不整页滚动）
    ========================================================= */
 
-const ROUTE_NAMES = ['/', '/calendar', '/week', '/docs', '/checkin', '/plays', '/faq', '/join'];
+const ROUTE_NAMES = ['/', '/calendar', '/week', '/docs', '/checkin', '/plays', '/works', '/faq', '/join'];
 let activeTabId = 1;
 
 /** 解析 location.hash → { name, week } */
@@ -1357,6 +1357,7 @@ function navGroups(openIds) {
       title: '其他',
       items: [
         { route: '/checkin', label: '打卡进度' },
+        { route: '/works', label: '作品墙' },
         { route: '/faq', label: '常见问题' },
         { route: '/join', label: '加入社群' },
       ],
