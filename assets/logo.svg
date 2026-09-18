@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="AI 学习训练营">
+  <defs>
+    <linearGradient id="baG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#C085DC"/>
+      <stop offset="1" stop-color="#5E2373"/>
+    </linearGradient>
+  </defs>
+  <path d="M8 0h38l18 18v38a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V8a8 8 0 0 1 8-8z" fill="url(#baG)"/>
+  <path d="M46 0l18 18H50a4 4 0 0 1-4-4V0z" fill="#FFFFFF" opacity=".38"/>
+  <circle cx="32" cy="27" r="12.5" fill="none" stroke="#FFFFFF" stroke-width="3.6"/>
+  <circle cx="32" cy="27" r="4.2" fill="#FFFFFF"/>
+  <rect x="19" y="45" width="26" height="6" rx="3" fill="#FFFFFF" opacity=".72"/>
+</svg>

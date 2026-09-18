@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="第 4 周：个人网页上线">
+  <g fill="none" stroke="#128AFA" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4.5" y="8" width="39" height="32" rx="4"/>
+    <path d="M4.5 16h39"/>
+    <circle cx="10.5" cy="12" r="1.5" fill="#128AFA" stroke="none"/>
+    <circle cx="15.5" cy="12" r="1.5" fill="#128AFA" stroke="none"/>
+    <circle cx="24" cy="27.5" r="7.5"/>
+    <path d="M16.5 27.5h15"/>
+    <path d="M24 20c3 4 3 11 0 15"/>
+    <path d="M24 20c-3 4-3 11 0 15"/>
+  </g>
+</svg>

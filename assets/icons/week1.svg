@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="第 1 周：部署 WorkBuddy">
+  <g fill="none" stroke="#128AFA" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="5.5" y="8" width="37" height="24" rx="3.5"/>
+    <path d="M18 38h12M24 32v6"/>
+    <path d="M24 13v9"/>
+    <path d="M20 18.5l4 4 4-4"/>
+  </g>
+</svg>

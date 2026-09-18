@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 学习训练营 | 香港中文大学（深圳） × 腾讯云AI 交流圈</title>
+<meta name="description" content="四周时间，从装好 WorkBuddy，到搭好自己的知识库、专属技能和个人网页。香港中文大学（深圳）腾讯云AI交流圈官方活动页面。">
+<link rel="icon" href="assets/cuhk-badge.png" type="image/png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="is-loading">
+
+<!-- ============================================================
+     入场动画（参照 BA 主题的 splash：渐变 + 三角碎片 + 呼吸标记）
+     ============================================================ -->
+<div class="splash" id="splash" aria-hidden="true">
+  <p class="splash__text">正在加载<span>AI 学习训练营</span></p>
+</div>
+
+<!-- ============================================================
+     鼠标拖尾画布
+     ============================================================ -->
+<canvas class="trail" id="trail" aria-hidden="true"></canvas>
+
+<!-- ============================================================
+     顶栏
+     ============================================================ -->
+<header class="topbar" id="nav">
+  <div class="topbar__inner">
+    <a class="topbar__brand" href="#/">
+      <img src="assets/cuhk-badge.png" alt="香港中文大学（深圳）校徽" class="topbar__logo" width="40" height="40">
+      <span class="topbar__brandtext">
+        <strong>AI 学习训练营</strong>
+        <em>香港中文大学（深圳） × 腾讯云AI 交流圈</em>
+      </span>
+    </a>
+
+    <nav class="topbar__links" id="navLinks">
+      <a href="#/" data-route="/">主页</a>
+      <a href="#/calendar" data-route="/calendar">课程日历</a>
+      <a href="#/week/1" data-route="/week">每周详情</a>
+      <a href="#/docs" data-route="/docs">教学文件</a>
+      <a href="#/checkin" data-route="/checkin">打卡进度</a>
+      <a href="#/faq" data-route="/faq">常见问题</a>
+    </nav>
+
+    <div class="topbar__actions">
+      <a class="btn btn--ghost btn--sm" href="#/docs">下载教学包</a>
+      <a class="btn btn--primary btn--sm" href="#/join">加入社群</a>
+      <button class="topbar__burger" type="button" id="navBurger" aria-label="打开菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="topbar__progress"><i id="readProgress"></i></div>
+</header>
+
+<!-- ============================================================
+     侧边导航 + 视图
+     ============================================================ -->
+<div class="shell">
+  <aside class="side" id="side">
+    <nav class="side__nav" id="sideNav" aria-label="站内导航"></nav>
+    <div class="side__foot">
+      <a class="btn btn--ghost btn--full btn--sm" href="#/join">加入社群</a>
+    </div>
+  </aside>
+
+  <main class="main" id="top">
+
+    <!-- ==================== 主页 ==================== -->
+    <section class="view" id="view-home" data-view="/">
+
+      <div class="banner">
+        <div class="banner__bg" aria-hidden="true">
+          <i class="banner__glow banner__glow--a"></i>
+          <i class="banner__glow banner__glow--b"></i>
+          <img class="banner__halo" src="assets/halo.svg" alt="">
+        </div>
+        <div class="banner__inner">
+          <p class="tagline"><b>CHAPTER 01</b><span>第 1 期 · 4 周学习计划 · 零代码门槛</span></p>
+          <h1 class="banner__title">
+            <span>四周之后，</span>
+            <span>你会有<em>自己的 AI 工作流</em></span>
+          </h1>
+          <p class="banner__lead">
+            不讲课、不讲概念。每周只做一件事：<strong>装一个工具，做出一个东西。</strong><br>
+            四周结束，你手里会有一套能干活、能记事、能复用、能展示的 AI 装备。
+          </p>
+          <div class="banner__cta">
+            <a class="btn btn--primary" href="#/week/1">从第 1 周开始</a>
+            <a class="btn btn--ghost" href="#/docs">先看看教学文件</a>
+          </div>
+          <ul class="banner__stats">
+            <li><b>4</b><span>周 · 每周 1 个成果</span></li>
+            <li><b>4</b><span>份可下载教学文件</span></li>
+            <li><b>0</b><span>行代码要求</span></li>
+            <li><b>∞</b><span>装完之后能做的事</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 状态条带 -->
+      <section class="block">
+        <div id="homeStatus"></div>
+      </section>
+
+      <!-- 课程日历 -->
+      <section class="block">
+        <div class="sec-head">
+          <span class="sec-head__kicker">课程日历</span>
+          <h2>四周的节奏，<em>一张表看完</em></h2>
+          <p class="sec-head__sub">四周内容全部开放，任意一周都能随时点开看完整内容。</p>
+        </div>
+        <div id="calendarList"></div>
+      </section>
+
+      <!-- 四周路线 -->
+      <section class="block">
+        <div class="sec-head">
+          <span class="sec-head__kicker">四周路线</span>
+          <h2>每周只做一件事，<em>每周都有一个能拿出来的成果</em></h2>
+          <p class="sec-head__sub">点任意一张卡进入该周详情。每一周都包含完整的目标、分步指引、验收清单和打卡格式。</p>
+        </div>
+        <div id="roadGrid" class="road"></div>
+      </section>
+
+      <!-- 本周主推 -->
+      <section class="block">
+        <div class="sec-head">
+          <span class="sec-head__kicker">本周主推</span>
+          <h2>现在该做的<em>就是这一周</em></h2>
+        </div>
+        <div id="homeFocus"></div>
+      </section>
+
+      <!-- 教学文件（重要内容，留在主页） -->
+      <section class="block">
+        <div class="sec-head">
+          <span class="sec-head__kicker">教学文件</span>
+          <h2>四份文件，<em>丢给 WorkBuddy 就能开课</em></h2>
+          <p class="sec-head__sub">
+            整个拖进 WorkBuddy 对话框，发一句「照这份文件带我做完」，它就会一步一步教你。
+            四份文件现在全部开放下载，随时可以拿去用。
+          </p>
+        </div>
+        <div id="homeDocs"></div>
+        <p class="hintline">想让 WorkBuddy 带你做？用法示范在 <a href="#/docs">教学文件页</a>。</p>
+      </section>
+
+      <!-- 折叠：次要内容 -->
+      <section class="block">
+        <div class="sec-head">
+          <span class="sec-head__kicker">其他</span>
+          <h2>这些<em>收起来放</em>，需要再展开</h2>
+          <p class="sec-head__sub">主页只留最要紧的。下面是打卡规矩和玩法精选，点标题展开。</p>
+        </div>
+        <div class="folds" id="homeFolds"></div>
+      </section>
+
+    </section>
+
+    <!-- ==================== 课程日历（独立页） ==================== -->
+    <section class="view" id="view-calendar" data-view="/calendar">
+      <div class="pagehead">
+        <span class="sec-head__kicker">课程日历</span>
+        <h1>四周排期</h1>
+        <p>四周内容一次性铺开，但建议按周推进：一周只做一件事，做完就有一个能用的东西。</p>
+      </div>
+      <div id="calendarFull"></div>
+      <div class="notice notice--info">
+        <h4>关于这套节奏</h4>
+        <p>四周内容一次性铺开，大多数人会收藏然后永远不看。<strong>一周只给一件事，做完就有一个能用的东西</strong>——这是这个活动唯一有效的节奏控制手段。</p>
+      </div>
+    </section>
+
+    <!-- ==================== 每周详情 ==================== -->
+    <section class="view" id="view-week" data-view="/week">
+      <div class="pagehead">
+        <span class="sec-head__kicker">每周详情</span>
+        <h1>点开你正在做的那一周</h1>
+        <p>每一周都包含：目标 · 分步指引 · 验收清单 · 打卡格式 · 常见问题 · 举一反三。</p>
+      </div>
+      <div class="tabs" id="weekTabs" role="tablist"></div>
+      <div class="panels" id="weekPanels"></div>
+    </section>
+
+    <!-- ==================== 教学文件 ==================== -->
+    <section class="view" id="view-docs" data-view="/docs">
+      <div class="pagehead">
+        <span class="sec-head__kicker">教学文件</span>
+        <h1>四份文件，丢给 WorkBuddy 就能开课</h1>
+        <p>下载后有两种用法：一是自己照着读；二是整个拖进 WorkBuddy 对话框，发一句「照这份文件带我做完」，它就会一步一步教你。</p>
+      </div>
+      <div id="resList"></div>
+      <div class="notice notice--tip">
+        <h4>💡 用法示范：怎么让 WorkBuddy 带你做</h4>
+        <p>把任意一份教学文件拖进 WorkBuddy 对话框，再发下面这句：</p>
+        <pre class="code" id="kickoffPrompt">这份文件是我们学校 AI 社群的教学材料。
+请你扮演带教的学长/学姐，照这份文件一步一步带我做完。
+规矩：
+1. 一次只讲一步，讲完等我回复"好了"再讲下一步
+2. 每一步都先问我"你看到的是不是这个"，我确认后再继续
+3. 我卡住的时候，先问我在哪个界面、看到什么，再给解决方案
+4. 全程用大白话，别堆术语
+开始吧。</pre>
+        <button class="btn btn--primary btn--full" type="button" data-copy="#kickoffPrompt">复制这段启动指令</button>
+      </div>
+    </section>
+
+    <!-- ==================== 打卡进度 ==================== -->
+    <section class="view" id="view-checkin" data-view="/checkin">
+      <div class="pagehead">
+        <span class="sec-head__kicker">打卡进度</span>
+        <h1>进度自己看得见，完成几周算几周</h1>
+        <p>勾选你完成的周次，进度存在你自己的浏览器里，不会被上传。</p>
+      </div>
+
+      <div class="checkin">
+        <div class="checkin__panel">
+          <div class="progress">
+            <div class="progress__top">
+              <span>我的进度</span>
+              <b><i id="doneCount">0</i> / 4 周</b>
+            </div>
+            <div class="progress__bar"><i id="progressBar"></i></div>
+            <p class="progress__msg" id="progressMsg">从第 1 周开始吧，先把它装进电脑。</p>
+          </div>
+          <ul class="checklist" id="checklist"></ul>
+          <button class="linkbtn linkbtn--danger" type="button" id="resetProgress">清空我的打卡记录</button>
+        </div>
+
+        <aside class="checkin__side">
+          <div class="card">
+            <h4>打卡格式</h4>
+            <p class="card__sub">复制到群里就行，缺项也没关系。</p>
+            <pre class="code" id="checkinTemplate">【Week_ 打卡】专业-年级-名字
+✅ 我完成了：______
+💡 最有收获的一点：______
+🆘 卡住的地方（没有就写"无"）：______</pre>
+            <button class="btn btn--ghost btn--full" type="button" data-copy="#checkinTemplate">复制打卡格式</button>
+          </div>
+          <div class="card card--tip" id="ruleCard"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ==================== 互动玩法 ==================== -->
+    <section class="view" id="view-plays" data-view="/plays">
+      <div class="pagehead">
+        <span class="sec-head__kicker">群内互动玩法</span>
+        <h1>把四周串起来的互动话题</h1>
+        <p>每周挑 1–2 个在群里发起，配合打卡节奏使用。点卡片可复制话题文案。</p>
+      </div>
+      <div class="plays" id="playsGrid"></div>
+      <p class="hintline">
+        以上话题来自腾讯云官方《社群运营内容库》，完整版共 200 条，覆盖 AI 行业热点 / 校园学习 / 校园生活 / 学习提效 / 产品体验 / AI 共创 / 游戏互动 / 软广种草 / 留存共创 九个大类。
+      </p>
+    </section>
+
+    <!-- ==================== 常见问题 ==================== -->
+    <section class="view" id="view-faq" data-view="/faq">
+      <div class="pagehead">
+        <span class="sec-head__kicker">常见问题</span>
+        <h1>你可能想问的</h1>
+      </div>
+      <div class="faq" id="faqList"></div>
+    </section>
+
+    <!-- ==================== 加入社群 ==================== -->
+    <section class="view" id="view-join" data-view="/join">
+      <div class="pagehead">
+        <span class="sec-head__kicker">加入社群</span>
+        <h1>香港中文大学（深圳） × 腾讯云AI 交流圈</h1>
+        <p>这里是学校里最懂 AI 的同学聚集地，腾讯云 AI 产品的官方体验据点。训练营的活动通知、教学文件、答疑都在群里。</p>
+      </div>
+
+      <div class="join">
+        <div class="join__left">
+          <div class="join__rules">
+            <h4>进群先看三条</h4>
+            <ul>
+              <li><b>改群昵称</b>：专业-年级-名字，方便大家相识</li>
+              <li><b>禁发广告</b>：广告、涉黄、涉政、辱骂一经发现直接移出</li>
+              <li><b>鼓励真实分享</b>：用 AI 做出了什么、踩了什么坑，都欢迎发</li>
+            </ul>
+          </div>
+          <div class="notice notice--warn">
+            ⚠️ 温馨提示：谨慎添加好友，防范陌生人私信骚扰。有问题在群里问，别私加。
+          </div>
+        </div>
+        <div class="join__right">
+          <img src="assets/qr-group.png" alt="香港中文大学（深圳） × 腾讯云AI 交流圈 入群二维码" class="join__qr" width="200" height="200">
+          <p class="join__qrtext">微信 / 企业微信 扫码加入</p>
+          <a class="btn btn--ghost btn--full" href="#/docs">先去下载教学文件</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================================================
+     页脚
+     ============================================================ -->
+<footer class="foot">
+  <div class="foot__inner">
+    <div class="foot__brand">
+      <img src="assets/cuhk-badge.png" alt="香港中文大学（深圳）校徽" width="34" height="34">
+      <div>
+        <strong>AI 学习训练营</strong>
+        <span>香港中文大学（深圳） × 腾讯云AI 交流圈</span>
+      </div>
+    </div>
+    <nav class="foot__links" id="footLinks"></nav>
+    <p class="foot__note">
+      本页面由社群大使维护 · 教学内容参考腾讯云 AI 校园大使社群运营规范 · 页面内容以群内最新公告为准
+    </p>
+  </div>
+  <img class="foot__gate" src="assets/campus-gate.png" alt="" aria-hidden="true">
+</footer>
+
+<button class="totop" id="toTop" type="button" aria-label="回到顶部">↑</button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
