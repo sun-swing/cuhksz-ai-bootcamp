@@ -233,6 +233,26 @@
   /* ================= 访问计数（只写入，不在前端展示任何数据） ================= */
 
   var LAST_TRACK = { path: '', at: 0 };
+  var VISITOR_KEY = 'bootcamp-visitor';
+
+  /* 匿名访客标识：随机串存在浏览器本地，不含任何个人信息，仅用于统计独立访客数 */
+  function visitorId() {
+    try {
+      var v = localStorage.getItem(VISITOR_KEY);
+      if (v) return v;
+      var rnd = '';
+      if (window.crypto && window.crypto.getRandomValues) {
+        var buf = new Uint8Array(8);
+        window.crypto.getRandomValues(buf);
+        for (var i = 0; i < buf.length; i++) rnd += ('0' + buf[i].toString(16)).slice(-2);
+      } else {
+        rnd = Math.random().toString(16).slice(2, 18);
+      }
+      v = 'v' + Date.now().toString(36) + rnd;
+      localStorage.setItem(VISITOR_KEY, v);
+      return v;
+    } catch (e) { return ''; }
+  }
 
   function deviceType() {
     var ua = navigator.userAgent || '';
@@ -259,8 +279,12 @@
     LAST_TRACK.path = path;
     LAST_TRACK.at = now;
 
+    var row = { path: path, referrer: refHost(), device: deviceType() };
+    var vid = visitorId();
+    if (vid) row.visitor_id = vid;
+
     c.database.from('pageviews')
-      .insert({ path: path, referrer: refHost(), device: deviceType() })
+      .insert(row)
       .then(function (res) {
         /* 统计失败不影响任何页面功能，仅在控制台留痕，不打扰访客 */
         if (res && res.error && window.console) console.debug('[pageview] not recorded:', res.error.message || res.error);
