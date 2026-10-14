@@ -230,6 +230,43 @@
     });
   }
 
+  /* ================= 访问计数（只写入，不在前端展示任何数据） ================= */
+
+  var LAST_TRACK = { path: '', at: 0 };
+
+  function deviceType() {
+    var ua = navigator.userAgent || '';
+    if (/iPad|Tablet/i.test(ua)) return 'tablet';
+    if (/Mobi|Android|iPhone/i.test(ua)) return 'mobile';
+    return 'desktop';
+  }
+
+  function refHost() {
+    try {
+      var r = document.referrer || '';
+      if (!r) return '';
+      return r.replace(/^https?:\/\//i, '').split('/')[0].slice(0, 60);
+    } catch (e) { return ''; }
+  }
+
+  /* 记录一次页面访问：同一路径 1 分钟内不重复计数（避免刷新刷量） */
+  function trackPageview() {
+    var c = getCloud();
+    if (!c) return;
+    var path = ((location.hash || '#/').replace(/^#/, '') || '/').slice(0, 120);
+    var now = Date.now();
+    if (path === LAST_TRACK.path && now - LAST_TRACK.at < 60000) return;
+    LAST_TRACK.path = path;
+    LAST_TRACK.at = now;
+
+    c.database.from('pageviews')
+      .insert({ path: path, referrer: refHost(), device: deviceType() })
+      .then(function (res) {
+        /* 统计失败不影响任何页面功能，仅在控制台留痕，不打扰访客 */
+        if (res && res.error && window.console) console.debug('[pageview] not recorded:', res.error.message || res.error);
+      });
+  }
+
   /* ================= 启动 ================= */
 
   function init() {
@@ -244,6 +281,9 @@
     var wkBtn = $('#wkSubmit');
     if (wkBtn) wkBtn.addEventListener('click', submitWork);
 
+    /* 访问计数：首屏记一次，之后每次切换页面各记一次 */
+    trackPageview();
+
     /* 切到对应页面时才加载，避免首屏多余请求 */
     var checkinsLoaded = false, worksLoaded = false;
     function maybeLoad() {
@@ -252,7 +292,10 @@
       if (h.indexOf('#/works') === 0 && !worksLoaded) { worksLoaded = true; loadWorks(); }
     }
     maybeLoad();
-    window.addEventListener('hashchange', maybeLoad);
+    window.addEventListener('hashchange', function () {
+      trackPageview();
+      maybeLoad();
+    });
   }
 
   if (document.readyState === 'loading') {
