@@ -648,11 +648,11 @@ function renderWeekTabs(openIds) {
   const box = $('#weekTabs');
   if (!box) return;
   box.innerHTML = WEEKS
-    .map((w, i) => {
+    .map((w) => {
       const open = openIds.includes(w.id);
       return `
-      <button class="tab${i === 0 ? ' is-active' : ''}${open ? '' : ' is-locked'}"
-              type="button" role="tab" data-tab="${w.id}" aria-selected="${i === 0}">
+      <button class="tab${open ? '' : ' is-locked'}"
+              type="button" role="tab" data-tab="${w.id}" aria-selected="false">
         <span class="tab__n">W${w.id}</span>${esc(w.tab)}
         ${open ? '' : '<span class="tab__lock">🔒</span>'}
       </button>`;
@@ -856,9 +856,9 @@ function renderWeekPanels(openIds) {
   const box = $('#weekPanels');
   if (!box) return;
   box.innerHTML = WEEKS
-    .map((w, i) => {
+    .map((w) => {
       const open = openIds.includes(w.id);
-      return `<div class="panel${i === 0 ? ' is-active' : ''}" role="tabpanel" id="panel-${w.id}">
+      return `<div class="panel" role="tabpanel" id="panel-${w.id}">
         ${open ? unlockedPanelHTML(w) : lockedPanelHTML(w)}
       </div>`;
     })
@@ -1342,7 +1342,13 @@ function showRoute(opts) {
   document.body.classList.toggle('is-home', r.name === '/');
   markSideActive(r);
 
-  if (r.name === '/week') applyActiveTab();
+  if (r.name === '/week') {
+    applyActiveTab();
+  } else {
+    // 离开「每周详情」时清掉标签和面板的高亮，
+    // 否则回到这一页会看到上一个标签还亮着、和左栏高亮对不上。
+    clearActiveTab();
+  }
 
   if (!o.keepScroll) window.scrollTo(0, 0);
 
@@ -1702,11 +1708,11 @@ function refresh(force) {
   renderChecklist(openIds);
   syncDeliverUI();
   initWeekTabs();
-  applyActiveTab();
+  if (currentRoute().name === '/week') applyActiveTab();
   markSideActive(currentRoute());
 }
 
-/* Tab 切换（每次重渲染后需要重新绑定） */
+/* Tab 切换（用事件委托，避免每次重渲染后重复绑定 / 丢失） */
 function applyActiveTab() {
   $$('.tab').forEach((t) => {
     const on = t.dataset.tab === String(activeTabId);
@@ -1716,24 +1722,48 @@ function applyActiveTab() {
   $$('.panel').forEach((p) => p.classList.toggle('is-active', p.id === 'panel-' + activeTabId));
 }
 
-function initWeekTabs() {
+function clearActiveTab() {
   $$('.tab').forEach((t) => {
-    t.onclick = () => {
-      activeTabId = Number(t.dataset.tab);
-      applyActiveTab();
-      markSideActive(currentRoute());
-      if (location.hash !== '#/week/' + activeTabId) {
-        history.replaceState(null, '', '#/week/' + activeTabId);
-      }
-    };
+    t.classList.remove('is-active');
+    t.setAttribute('aria-selected', 'false');
   });
+  $$('.panel').forEach((p) => p.classList.remove('is-active'));
+}
+
+function initWeekTabs() {
+  const box = $('#weekTabs');
+  if (box && !box.dataset.bound) {
+    box.addEventListener('click', (e) => {
+      const t = e.target.closest('.tab');
+      if (!t || !box.contains(t)) return;
+      const id = Number(t.dataset.tab);
+      if (!id) return;
+      // 点击标签 = 切到那周的地址，走统一的 hashchange → showRoute 流程，
+      // 这样顶部标签、左侧栏高亮、右侧面板三处永远同源、不会各行其是。
+      const target = '#/week/' + id;
+      if (location.hash === target) {
+        activeTabId = id;
+        applyActiveTab();
+      } else {
+        location.hash = target;
+      }
+    });
+    box.dataset.bound = '1';
+  }
+
+  const vol = $('#weekPanelBox') || null;
+  if (vol && !vol.dataset.boundOpen) {
+    vol.dataset.boundOpen = '1';
+  }
 
   $$('[data-open-week]').forEach((btn) => {
+    if (btn.dataset.boundOpen) return;
+    btn.dataset.boundOpen = '1';
     btn.onclick = () => {
       const id = Number(btn.dataset.openWeek);
       if (!computeUnlocked().includes(id)) {
         const w = WEEKS.find((x) => x.id === id);
-        toast(`第 ${id} 周还没解锁，先看看《${w.title}》会教什么`);
+        toast(`第 ${id} 周还没开放：${fmtDayRange(id)} 开放，先看看《${w.title}》会教什么`);
       }
       location.hash = '#/week/' + id;
     };
