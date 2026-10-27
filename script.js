@@ -15,31 +15,39 @@
    原来的判定逻辑即可。
    ========================================================= */
 
+/*
+   训练营采用「营内天数」计时，与真实日历无关：
+     W1 = Day 1–7 ｜ W2 = Day 8–14 ｜ W3 = Day 15–21 ｜ W4 = Day 22–28
+   合计 28 天。页面只显示营内天数，不显示具体年月日。
+   下表仅作为「时间锁」的内部时间轴参考（如需恢复逐周解锁时才用得上），
+   当前 computeUnlocked() 不读取它。
+*/
 const UNLOCK = {
   mode: 'schedule',              // 'schedule' 按时间自动解锁 ｜ 'manual' 只认 forceUnlocked
 
-  /*
-    标准四周排期：共 28 天，每周 7 天，周一 00:00 开新周。
-    W1 10/19–10/25 ｜ W2 10/26–11/01 ｜ W3 11/02–11/08 ｜ W4 11/09–11/15
-    换了新一期，只需把下面的 start 改成任意一个周一的日期，各周日期会自动顺延。
-  */
-  start: '2026-10-19T00:00',
-
-  get schedule() {
-    const ms = 7 * 24 * 60 * 60 * 1000;
-    const base = new Date(this.start).getTime();
-    const out = {};
-    for (let i = 0; i < 4; i++) {
-      const d = new Date(base + i * ms);
-      out[i + 1] = fmtISO(d);
-    }
-    return out;
+  schedule: {
+    1: '2026-10-19T00:00',       // 内部时间轴：第 1 天
+    2: '2026-10-26T00:00',       // 内部时间轴：第 8 天
+    3: '2026-11-02T00:00',       // 内部时间轴：第 15 天
+    4: '2026-11-09T00:00',       // 内部时间轴：第 22 天
   },
 
   forceUnlocked: [],             // 例：要提前放行第 2 周，写成 [2]
 
   neverRelock: true,             // 解锁过就永久可见（学生点进来过一次，之后永远能回看）
 };
+
+/* 营内天数区间：W1 = Day 1–7，W2 = Day 8–14，W3 = Day 15–21，W4 = Day 22–28 */
+function dayRangeOf(id) {
+  const start = (id - 1) * 7 + 1;
+  return { start, end: start + 6 };
+}
+
+/** 一个周次的营内天数文案，如「Day 1–7」 */
+function fmtDayRange(id) {
+  const r = dayRangeOf(id);
+  return `Day ${r.start}–${r.end}`;
+}
 
 /* =========================================================
    一、数据区（改这里就行）
@@ -629,7 +637,7 @@ function nextLockedWeek(openIds) {
 function lockInfoHTML(id) {
   const t = unlockTimeOf(id);
   if (!t) return '<span class="lockbadge">🔒 待解锁</span>';
-  return `<span class="lockbadge" data-unlock-at="${t.getTime()}">🔒 ${fmtDate(t)} 解锁</span>`;
+  return `<span class="lockbadge">🔒 ${fmtDayRange(id)} 开放</span>`;
 }
 
 /* =========================================================
@@ -656,12 +664,10 @@ function renderWeekTabs(openIds) {
 function lockedPanelHTML(w) {
   const t = unlockTimeOf(w.id);
   const learn = w.teaser.willLearn.map((x) => `<li>${rich(x)}</li>`).join('');
-  const countdown = t
-    ? `<div class="countdown" data-countdown="${t.getTime()}">
-         <span class="countdown__label">距离解锁还有</span>
-         <b class="countdown__num" data-countdown-num>--:--:--</b>
-       </div>`
-    : `<div class="countdown"><span class="countdown__label">解锁时间待公布</span></div>`;
+  const countdown = `<div class="countdown">
+         <span class="countdown__label">本周在营内</span>
+         <b class="countdown__num">${fmtDayRange(w.id)}</b>
+       </div>`;
 
   return `
   <div class="panel__grid panel__grid--locked">
@@ -690,8 +696,8 @@ function lockedPanelHTML(w) {
         </div>
 
         <p class="locked__note">
-          📌 内容将在 <b>${t ? fmtDate(t) : '公告时间'}</b> 解锁。
-          解锁后会一直保留在这里，随时可以回来反复看。
+          📌 内容将在 <b>${fmtDayRange(w.id)}</b> 开放（营内第 ${dayRangeOf(w.id).start} 天起）。
+          开放后会一直保留在这里，随时可以回来反复看。
         </p>
       </div>
     </div>
@@ -704,9 +710,9 @@ function lockedPanelHTML(w) {
           <div class="meta__row"><span>前置要求</span><b>${esc(w.prereq)}</b></div>
           <div class="meta__row"><span>本周产出</span><b>${esc(w.output)}</b></div>
           <div class="meta__row"><span>难度</span><b>${esc(w.meta[3][1])}</b></div>
-          <div class="meta__row"><span>状态</span><b>🔒 未解锁</b></div>
+          <div class="meta__row"><span>状态</span><b>🔒 未开放</b></div>
         </div>
-        <button class="btn btn--ghost btn--full is-disabled" type="button" data-locked-tip>🔒 教学文件未解锁</button>
+        <button class="btn btn--ghost btn--full is-disabled" type="button" data-locked-tip>🔒 教学文件未开放</button>
         ${linksHTML(w)}
       </div>
 
@@ -883,7 +889,7 @@ function renderUnlockList(openIds, currentId) {
       const isCur = w.id === currentId;
       const state = open
         ? '<b style="color:var(--cyan)">已开放</b>'
-        : `<b style="color:var(--amber)">${t ? fmtDate(t) : '待定'}</b>`;
+        : `<b style="color:var(--amber)">${fmtDayRange(w.id)}</b>`;
       return `<li class="${isCur ? 'is-current' : ''}${open ? '' : ' is-locked'}">
         <span>W${w.id} · ${esc(w.tab)}</span>${state}
       </li>`;
@@ -907,7 +913,7 @@ function decorateRoadCards(openIds) {
     if (head && !$('.road__lockind', head)) {
       const ind = document.createElement('span');
       ind.className = 'road__lockind';
-      ind.innerHTML = open ? '● 已开放' : '🔒 未解锁';
+      ind.innerHTML = open ? '● 已开放' : '🔒 未开放';
       head.appendChild(ind);
     }
 
@@ -923,15 +929,13 @@ function decorateRoadCards(openIds) {
       const t = unlockTimeOf(id);
       unlockEl.innerHTML = open
         ? '<span class="road__ok">✓ 可以做了</span>'
-        : `<span data-unlock-at="${t ? t.getTime() : ''}">${
-            t ? fmtDate(t) + ' 解锁' : '待解锁'
-          }</span>`;
+        : `<span>${fmtDayRange(id)} 开放</span>`;
 
       const btn = $('.linkbtn', foot);
       if (btn) btn.textContent = open ? '看详情 →' : '看预告 →';
     }
 
-    if (!open) card.title = '该周尚未解锁，点击查看会教什么';
+    if (!open) card.title = '该周尚未开放，点击查看会教什么';
   });
 }
 
@@ -959,15 +963,15 @@ function renderUnlockBanner(openIds) {
     <div class="unlock-banner__icon">🔒</div>
     <div class="unlock-banner__body">
       <strong>已开放 ${openIds.length} / 4 周　｜　下一周《${esc(nw ? nw.title : '')}》${
-    t ? fmtDate(t) : ''
-  }解锁</strong>
-      <span>解锁前只放出"这一周会教你什么"，解锁后内容永久保留，随时可以回看。</span>
+    nw ? fmtDayRange(nw.id) : ''
+  } 开放</strong>
+      <span>开放前只放出"这一周会教你什么"，开放后内容永久保留，随时可以回看。</span>
     </div>
     ${
-      t
-        ? `<div class="countdown countdown--inline" data-countdown="${t.getTime()}">
-             <span class="countdown__label">还有</span>
-             <b class="countdown__num" data-countdown-num>--:--:--</b>
+      nw
+        ? `<div class="countdown countdown--inline">
+             <span class="countdown__label">开放于</span>
+             <b class="countdown__num">${fmtDayRange(nw.id)}</b>
            </div>`
         : ''
     }`;
@@ -989,12 +993,12 @@ function renderResources(openIds) {
       <img src="${w.icon}" alt="" width="40" height="40">
       <div class="res__meta">
         <h4>第 ${w.id} 周 · ${esc(w.title)}</h4>
-        <p>${open ? esc(w.subtitle) : '🔒 ' + (t ? fmtDate(t) + ' 解锁' : '待解锁') + ' · 解锁后可下载'}</p>
+        <p>${open ? esc(w.subtitle) : '🔒 ' + fmtDayRange(w.id) + ' 开放 · 开放后可下载'}</p>
       </div>
       ${
         open
           ? `<a class="btn btn--ghost" href="${w.file}" download="${esc(w.fileLabel)}">下载 .md</a>`
-          : `<button class="btn btn--ghost is-disabled" type="button" data-locked-tip>🔒 未解锁</button>`
+          : `<button class="btn btn--ghost is-disabled" type="button" data-locked-tip>🔒 未开放</button>`
       }
     </article>`;
   }).join('');
@@ -1109,7 +1113,7 @@ function renderChecklist(openIds) {
         <span class="checkitem__box"></span>
         <span class="checkitem__body">
           <strong>${esc(title)}</strong>
-          <span>${open ? esc(sub) : '🔒 该周尚未解锁'}</span>
+          <span>${open ? esc(sub) : '🔒 该周尚未开放'}</span>
         </span>
         ${open ? '' : '<span class="checkitem__lock">🔒</span>'}
       </button>`;
@@ -1154,7 +1158,7 @@ function initChecklist(openIds) {
 
     if (!computeUnlocked().includes(step)) {
       const t = unlockTimeOf(step);
-      toast(`第 ${step} 周还没解锁${t ? '，' + fmtDate(t) + ' 开放' : ''}`);
+      toast(`第 ${step} 周还没开放，${fmtDayRange(step)} 开放`);
       return;
     }
 
@@ -1361,7 +1365,7 @@ function navGroups(openIds) {
       title: '开始',
       items: [
         { route: '/', label: '主页' },
-        { route: '/calendar', label: '课程日历' },
+        { route: '/calendar', label: '28天排期' },
       ],
     },
     {
@@ -1434,7 +1438,7 @@ function currentFocusWeek(openIds) {
 function statusChip(open) {
   return open
     ? '<span class="chip chip--ok">已开放</span>'
-    : '<span class="chip chip--wait">未解锁</span>';
+    : '<span class="chip chip--wait">未开放</span>';
 }
 
 /** 主页顶部状态条带 */
@@ -1453,14 +1457,14 @@ function renderHomeStatus(openIds) {
       <b>${openIds.length} / ${WEEKS.length} 周</b>
     </div>
     <div class="statusbar__cell statusbar__cell--wide">
-      <span>${nw ? '下一周' : '全部解锁'}</span>
+      <span>${nw ? '下一周' : '全部开放'}</span>
       <b>${nw ? '《' + esc(nw.title) + '》' : '🎉 四周内容已全开'}</b>
     </div>
     ${
-      t
-        ? `<div class="countdown countdown--inline" data-countdown="${t.getTime()}">
-             <span class="countdown__label">还有</span>
-             <b class="countdown__num" data-countdown-num>--:--:--</b>
+      nw
+        ? `<div class="countdown countdown--inline">
+             <span class="countdown__label">开放于</span>
+             <b class="countdown__num">${fmtDayRange(nw.id)}</b>
            </div>`
         : ''
     }
@@ -1488,7 +1492,7 @@ function calendarHTML(openIds) {
         <p>${esc(w.subtitle)}</p>
       </div>
       <div class="calrow__meta">
-        <span class="calrow__when">${t ? fmtWeekRange(t) : '待定'}</span>
+        <span class="calrow__when">营内 ${fmtDayRange(w.id)}</span>
         <span class="calrow__dur">⏱ ${esc(w.duration)}</span>
       </div>
       <div class="calrow__act">
@@ -1517,7 +1521,7 @@ function renderRoad(openIds) {
     <article class="road__card${open ? '' : ' is-locked'}">
       <div class="road__head">
         <span class="road__num">Week ${w.id}</span>
-        <span class="road__lockind">${open ? '● 已开放' : '🔒 未解锁'}</span>
+        <span class="road__lockind">${open ? '● 已开放' : '🔒 未开放'}</span>
       </div>
       <img class="road__icon" src="${w.icon}" alt="" width="46" height="46">
       <h3>${esc(w.title)}</h3>
@@ -1531,7 +1535,7 @@ function renderRoad(openIds) {
         ${
           open
             ? '<span class="road__ok">✓ 可以做了</span>'
-            : `<span class="road__unlock">${t ? fmtDate(t) + ' 解锁' : '待解锁'}</span>`
+            : `<span class="road__unlock">${fmtDayRange(w.id)} 开放</span>`
         }
       </div>
       <a class="road__link" href="#/week/${w.id}" aria-label="进入第 ${w.id} 周"></a>
@@ -1551,12 +1555,12 @@ function renderHomeDocs(openIds) {
       <img src="${w.icon}" alt="" width="36" height="36">
       <div class="docrow__meta">
         <h4>第 ${w.id} 周 · ${esc(w.title)}</h4>
-        <p>${open ? esc(w.duration) + ' · 可下载' : '🔒 ' + (t ? fmtDate(t) + ' 解锁' : '待解锁')}</p>
+        <p>${open ? esc(w.duration) + ' · 可下载' : '🔒 ' + fmtDayRange(w.id) + ' 开放'}</p>
       </div>
       ${
         open
           ? `<a class="btn btn--ghost btn--sm" href="${w.file}" download="${esc(w.fileLabel)}">下载 .md</a>`
-          : '<button class="btn btn--ghost btn--sm is-disabled" type="button" data-locked-tip>🔒 未解锁</button>'
+          : '<button class="btn btn--ghost btn--sm is-disabled" type="button" data-locked-tip>🔒 未开放</button>'
       }
     </article>`;
   }).join('');
@@ -1663,7 +1667,7 @@ function renderFoot() {
   if (!box) return;
   box.innerHTML = [
     ['#/', '主页'],
-    ['#/calendar', '课程日历'],
+    ['#/calendar', '28天排期'],
     ['#/week/1', '每周详情'],
     ['#/docs', '教学文件'],
     ['#/plays', '互动玩法'],
@@ -1745,7 +1749,7 @@ function initCopyButtons() {
     const locked = e.target.closest('[data-locked-tip]');
     if (locked) {
       const t = nextLockedWeek(computeUnlocked());
-      toast(`🔒 该内容尚未解锁${t ? '，' + fmtDate(unlockTimeOf(t.id)) + ' 开放' : ''}`);
+      toast(`${t ? '🔒 该内容将在 ' + fmtDayRange(t.id) + ' 开放' : '🔒 该内容尚未开放'}`);
       return;
     }
 
