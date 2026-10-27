@@ -18,11 +18,22 @@
 const UNLOCK = {
   mode: 'schedule',              // 'schedule' 按时间自动解锁 ｜ 'manual' 只认 forceUnlocked
 
-  schedule: {
-    1: '2026-09-18T00:00',       // 第 1 周 · 今天 00:00
-    2: '2026-09-25T08:00',       // 第 2 周 · 一周后 08:00
-    3: '2026-10-02T08:00',       // 第 3 周 · 两周后 08:00
-    4: '2026-10-09T08:00',       // 第 4 周 · 三周后 08:00
+  /*
+    标准四周排期：共 28 天，每周 7 天，周一 00:00 开新周。
+    W1 10/19–10/25 ｜ W2 10/26–11/01 ｜ W3 11/02–11/08 ｜ W4 11/09–11/15
+    换了新一期，只需把下面的 start 改成任意一个周一的日期，各周日期会自动顺延。
+  */
+  start: '2026-10-19T00:00',
+
+  get schedule() {
+    const ms = 7 * 24 * 60 * 60 * 1000;
+    const base = new Date(this.start).getTime();
+    const out = {};
+    for (let i = 0; i < 4; i++) {
+      const d = new Date(base + i * ms);
+      out[i + 1] = fmtISO(d);
+    }
+    return out;
   },
 
   forceUnlocked: [],             // 例：要提前放行第 2 周，写成 [2]
@@ -506,10 +517,25 @@ function pad(n) {
   return String(n).padStart(2, '0');
 }
 
+/** Date → 本地时间 ISO 串（YYYY-MM-DDTHH:mm），供 new Date() 直接解析 */
+function fmtISO(d) {
+  return (
+    d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+    'T' + pad(d.getHours()) + ':' + pad(d.getMinutes())
+  );
+}
+
 /** 格式化成「9月30日 20:00」 */
 function fmtDate(d) {
   if (!(d instanceof Date) || isNaN(d)) return '待定';
   return `${d.getMonth() + 1}月${d.getDate()}日 ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Date → 周区间文案，如「10月19日 – 10月25日」 */
+function fmtWeekRange(d) {
+  if (!(d instanceof Date) || isNaN(d)) return '待定';
+  const end = new Date(d.getTime() + 6 * 24 * 60 * 60 * 1000);
+  return `${d.getMonth() + 1}月${d.getDate()}日 – ${end.getMonth() + 1}月${end.getDate()}日`;
 }
 
 /** 倒计时文本 */
@@ -1462,7 +1488,7 @@ function calendarHTML(openIds) {
         <p>${esc(w.subtitle)}</p>
       </div>
       <div class="calrow__meta">
-        <span class="calrow__when">${t ? fmtDate(t) : '待定'}</span>
+        <span class="calrow__when">${t ? fmtWeekRange(t) : '待定'}</span>
         <span class="calrow__dur">⏱ ${esc(w.duration)}</span>
       </div>
       <div class="calrow__act">
