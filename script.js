@@ -1371,7 +1371,7 @@ function navGroups(openIds) {
       title: '开始',
       items: [
         { route: '/', label: '主页' },
-        { route: '/calendar', label: '28天排期' },
+        { route: '/calendar', label: '课程日历' },
       ],
     },
     {
@@ -1673,7 +1673,7 @@ function renderFoot() {
   if (!box) return;
   box.innerHTML = [
     ['#/', '主页'],
-    ['#/calendar', '28天排期'],
+    ['#/calendar', '课程日历'],
     ['#/week/1', '每周详情'],
     ['#/docs', '教学文件'],
     ['#/plays', '互动玩法'],
